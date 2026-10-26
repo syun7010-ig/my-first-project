@@ -208,5 +208,122 @@
     dateLabel.textContent = '오늘도 좋은 하루 보내세요';
   }
 
+  const viewDataButton = document.querySelector('#view-data');
+  const savedDataPanel = document.querySelector('#saved-data-panel');
+  const savedDataSummary = document.querySelector('#saved-data-summary');
+  const savedDataContent = document.querySelector('#saved-data-content');
+  const exportDataButton = document.querySelector('#export-data');
+  const importDataButton = document.querySelector('#import-data-button');
+  const importDataFile = document.querySelector('#import-data-file');
+  const dataStatus = document.querySelector('#data-status');
+
+  function createBackupData() {
+    return {
+      format: 'daily-tasks-backup',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      tasks
+    };
+  }
+
+  function showSavedData() {
+    const isOpen = !savedDataPanel.hidden;
+    savedDataPanel.hidden = isOpen;
+    viewDataButton.setAttribute('aria-expanded', String(!isOpen));
+    viewDataButton.textContent = isOpen ? '저장 데이터 보기' : '저장 데이터 숨기기';
+    if (!isOpen) {
+      savedDataSummary.textContent = '총 ' + tasks.length + '개 · 완료 ' +
+        tasks.filter(task => task.completed).length + '개 · 진행 중 ' +
+        tasks.filter(task => !task.completed).length + '개';
+      savedDataContent.textContent = JSON.stringify(createBackupData(), null, 2);
+    }
+  }
+
+  function exportBackup() {
+    try {
+      const blob = new Blob([JSON.stringify(createBackupData(), null, 2)], {
+        type: 'application/json;charset=utf-8'
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const date = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.download = 'daily-tasks-backup-' + date + '.json';
+      link.style.display = 'none';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      dataStatus.textContent = '백업 파일을 만들었어요. 다운로드 항목 또는 파일 앱을 확인해 주세요.';
+    } catch (error) {
+      console.error('백업 파일 생성에 실패했습니다.', error);
+      dataStatus.textContent = '백업 파일을 만들지 못했어요. 다시 시도해 주세요.';
+    }
+  }
+
+  function normalizeImportedTasks(value) {
+    const imported = Array.isArray(value) ? value :
+      value && value.format === 'daily-tasks-backup' && Array.isArray(value.tasks)
+        ? value.tasks : null;
+    if (!imported) throw new Error('파일 형식이 올바르지 않습니다. 이 앱에서 내보낸 JSON 백업 파일을 선택해 주세요.');
+    if (imported.length > 10000) throw new Error('할 일이 너무 많아 불러올 수 없습니다.');
+    const valid = imported.every(task => task &&
+      typeof task.text === 'string' && task.text.trim().length > 0 &&
+      typeof task.completed === 'boolean');
+    if (!valid) throw new Error('백업 안의 할 일 데이터가 올바르지 않습니다. 현재 데이터는 변경하지 않았어요.');
+    return imported.map(task => ({
+      id: typeof task.id === 'string' && task.id
+        ? task.id
+        : (typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : Date.now().toString(36) + Math.random().toString(36).slice(2)),
+      text: task.text.trim().slice(0, 160),
+      completed: task.completed,
+      ...(typeof task.createdAt === 'string' ? { createdAt: task.createdAt } : {})
+    }));
+  }
+
+  viewDataButton.addEventListener('click', showSavedData);
+  exportDataButton.addEventListener('click', exportBackup);
+  importDataButton.addEventListener('click', () => {
+    importDataFile.value = '';
+    importDataFile.click();
+  });
+
+  importDataFile.addEventListener('change', async () => {
+    const file = importDataFile.files && importDataFile.files[0];
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      const importedTasks = normalizeImportedTasks(parsed);
+      if (!window.confirm('현재 할 일 ' + tasks.length + '개를 백업 파일의 ' +
+        importedTasks.length + '개로 바꿀까요? 기존 목록은 백업 파일 내용으로 교체됩니다.')) {
+        dataStatus.textContent = '불러오기를 취소했어요. 기존 데이터는 그대로예요.';
+        return;
+      }
+      const previousTasks = tasks;
+      tasks = importedTasks;
+      if (!saveTasks()) {
+        tasks = previousTasks;
+        dataStatus.textContent = '기기에 저장하지 못했어요. 저장 공간을 확인해 주세요. 기존 목록은 화면에 유지됩니다.';
+        return;
+      }
+      currentFilter = 'all';
+      render();
+      if (!savedDataPanel.hidden) {
+        savedDataSummary.textContent = '총 ' + tasks.length + '개 · 완료 ' +
+          tasks.filter(task => task.completed).length + '개 · 진행 중 ' +
+          tasks.filter(task => !task.completed).length + '개';
+        savedDataContent.textContent = JSON.stringify(createBackupData(), null, 2);
+      }
+      dataStatus.textContent = '백업에서 할 일 ' + tasks.length + '개를 불러왔어요.';
+    } catch (error) {
+      console.error('백업 불러오기에 실패했습니다.', error);
+      dataStatus.textContent = error instanceof SyntaxError
+        ? 'JSON 파일을 읽을 수 없어요. 올바른 백업 파일인지 확인해 주세요.'
+        : (error.message || '백업 파일을 불러오지 못했어요.');
+    }
+  });
+
   render();
 })();

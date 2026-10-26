@@ -50,6 +50,21 @@
       </div>
       <div class="list-footer"><span id="remaining-text">남은 할 일 0개</span><button id="clear-completed" class="clear-button" type="button" disabled>완료 항목 지우기</button></div>
     </section>
+    <section class="data-tools" aria-labelledby="data-tools-title">
+      <h2 id="data-tools-title">내 데이터 관리</h2>
+      <p class="data-help">할 일은 이 브라우저에 저장돼요. 파일로 백업해 두면 나중에 복원할 수 있어요.</p>
+      <div class="data-actions">
+        <button id="view-data" class="data-button" type="button" aria-expanded="false" aria-controls="saved-data-panel">저장 데이터 보기</button>
+        <button id="export-data" class="data-button primary" type="button">JSON 백업 내보내기</button>
+        <button id="import-data-button" class="data-button" type="button">백업 파일 불러오기</button>
+        <input id="import-data-file" class="sr-only" type="file" accept=".json,application/json">
+      </div>
+      <div id="saved-data-panel" class="saved-data-panel" hidden>
+        <p id="saved-data-summary" class="data-help"></p>
+        <pre id="saved-data-content" class="saved-data-content"></pre>
+      </div>
+      <p id="data-status" class="data-status" role="status" aria-live="polite"></p>
+    </section>
     <footer><span class="footer-heart">✳</span> 데이터는 이 브라우저의 저장 공간에 보관됩니다.</footer>
   </main>
   <noscript><p class="noscript">이 앱을 사용하려면 브라우저에서 JavaScript를 활성화해 주세요.</p></noscript>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f7fb">
+  <meta name="description" content="브라우저에 할 일을 저장하는 심플한 할 일 관리 앱">
+  <title>오늘의 할 일</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">✓</div>
+      <div><p class="eyebrow">MY DAILY SPACE</p><h1>오늘의 할 일</h1></div>
+      <span class="local-badge"><span></span> 내 기기에 저장</span>
+    </header>
+
+    <section class="welcome" aria-labelledby="welcome-title">
+      <p class="date-label" id="today-date"></p>
+      <h2 id="welcome-title">작은 한 걸음부터 시작해요<span>✳</span></h2>
+      <p class="welcome-copy">해야 할 일을 적고, 하나씩 완료해 보세요.</p>
+      <div class="progress-panel">
+        <div class="progress-copy"><span>오늘의 진행 상황</span><strong id="progress-text">0%</strong></div>
+        <div class="progress-track" role="progressbar" aria-label="할 일 완료율" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-bar"><div id="progress-fill"></div></div>
+        <p id="progress-caption">첫 번째 할 일을 추가해 보세요.</p>
+      </div>
+    </section>
+
+    <section class="task-section" aria-labelledby="tasks-heading">
+      <div class="section-heading"><div><p class="eyebrow">YOUR CHECKLIST</p><h2 id="tasks-heading">내 할 일 <span id="task-count">0</span></h2></div></div>
+      <form id="task-form" class="add-form">
+        <label class="sr-only" for="task-input">새 할 일</label>
+        <input id="task-input" name="task" type="text" maxlength="160" placeholder="어떤 일을 해야 하나요?" autocomplete="off" required>
+        <button class="add-button" type="submit" aria-label="할 일 추가"><span aria-hidden="true">＋</span><span>추가</span></button>
+      </form>
+
+      <div class="filters" role="group" aria-label="할 일 필터">
+        <button class="filter-button active" type="button" data-filter="all" aria-pressed="true">전체 <span id="all-count">0</span></button>
+        <button class="filter-button" type="button" data-filter="active" aria-pressed="false">진행 중 <span id="active-count">0</span></button>
+        <button class="filter-button" type="button" data-filter="completed" aria-pressed="false">완료 <span id="completed-count">0</span></button>
+      </div>
+
+      <ul id="task-list" class="task-list" aria-live="polite"></ul>
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon" aria-hidden="true">✎</div>
+        <h3>아직 등록한 할 일이 없어요</h3>
+        <p>위 입력창에 오늘 할 일을 적어보세요.</p>
+      </div>
+      <div class="list-footer"><span id="remaining-text">남은 할 일 0개</span><button id="clear-completed" class="clear-button" type="button" disabled>완료 항목 지우기</button></div>
+    </section>
+    <footer><span class="footer-heart">✳</span> 데이터는 이 브라우저의 저장 공간에 보관됩니다.</footer>
+  </main>
+  <noscript><p class="noscript">이 앱을 사용하려면 브라우저에서 JavaScript를 활성화해 주세요.</p></noscript>
+</body>
+</html>
